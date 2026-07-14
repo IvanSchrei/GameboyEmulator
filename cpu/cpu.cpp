@@ -785,6 +785,239 @@ void CPU::cycle(){
             F() = newFlags;
             break;
         }
+        case 0x30:{
+            //0x30
+            //JR NC, s8
+            //If carry flag is 0 jump s8 steps from PC, else execute next instruction
+            bool c = Flags::test(F(), Flags::C);
+            int8_t offset = static_cast<int8_t>(memory_.read(PC_));
+            PC_ += 1;
+            if(!c){
+                PC_ += offset;
+            }
+            break;
+        }
+        case 0x31:{
+            //0x31
+            //LD SP, d16
+            //Load next 2 bytes of memory into SP(Stack Pointer), first byte is lower (0-7), second is higher (8-15)
+            uint8_t low = memory_.read(PC_);
+            PC_ += 1;
+            uint8_t high = memory_.read(PC_);
+            PC_ += 1;
+            uint16_t value = (high << 8) | low;
+            SP_ = value;
+            break;
+        }
+        case 0x32:{
+            //0x32
+            //LD (HL-), A
+            //Store contents of A into memory location in HL, then decrement HL by 1
+            uint8_t a = Registers_[REG_A];
+            uint16_t hl = getHL();
+            memory_.write(hl, a);
+            setHL(hl - 1);
+            break;
+        }
+        case 0x33:{
+            //0x33
+            //INC SP
+            //Increment SP (Stack Pointer) by 1
+            SP_ = SP_ + 1;
+            break;
+        }
+        case 0x34:{
+            //0x34
+            //INC (HL)
+            //Increment content of address in HL by 1
+            uint16_t hl = getHL();
+            uint8_t oldValue = memory_.read(hl);
+            uint8_t newValue = oldValue + 1;
+            uint8_t newFlags = F() & Flags::C;
+            
+            //Z
+            Flags::assign(newFlags, Flags::Z, newValue == 0);
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd8(oldValue, 1));
+
+            memory_.write(hl, newValue);
+            F() = newFlags;
+            break;
+        }
+        case 0x35:{
+            //0x35
+            //DEC (HL)
+            //Decrement content of address in HL by 1
+            uint16_t hl = getHL();
+            uint8_t oldValue = memory_.read(hl);
+            uint8_t newValue = oldValue - 1;
+            uint8_t newFlags = F() & Flags::C;
+
+            //Z
+            Flags::assign(newFlags, Flags::Z, newValue == 0);
+
+            //N
+            Flags::set(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfBorrowSub8(oldValue, 1));
+
+            memory_.write(hl, newValue);
+            F() = newFlags;
+            break;
+        }
+        case 0x36:{
+            //0x36
+            //LD (HL), d8
+            //Store next 8 bits from memory at address in HL
+            uint16_t hl = getHL();
+            uint8_t value = memory_.read(PC_);
+            PC_ += 1;
+            memory_.write(hl, value);
+            break;
+        }
+        case 0x37:{
+            //0x37
+            //SCF
+            //Set carry Flag
+            uint8_t newFlags = F() & Flags::Z;
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::clear(newFlags, Flags::H);
+
+            //C
+            Flags::set(newFlags, Flags::C);
+
+            F() = newFlags;
+            break;
+        }
+        case 0x38:{
+            //0x38
+            //JR C, s8
+            //If carry flag is 1 jump s8 steps from PC, else execture next instruction
+            bool c = Flags::test(F(), Flags::C);
+            int8_t offset = static_cast<int8_t>(memory_.read(PC_));
+            PC_ += 1;
+            
+            if(c){
+                PC_ += offset;
+            }
+
+            break;
+        }
+        case 0x39:{
+            //0x39
+            //ADD HL, SP
+            //Add content of SP tp content of HL and write it into HL
+            uint16_t hl = getHL();
+            uint16_t result = hl + SP_;
+            uint8_t newFlags = F() & Flags::Z;
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd16(hl, SP_));
+
+            //C
+            Flags::assign(newFlags, Flags::C, Flags::carryAdd16(hl, SP_));
+
+            setHL(result);
+            F() = newFlags;
+            break;
+        }
+        case 0x3A:{
+            //0x3A
+            //LD A, (HL-)
+            //Load content of address in HL into A, decrement HL
+            uint16_t hl = getHL();
+            Registers_[REG_A] = memory_.read(hl);
+            setHL(hl - 1);
+            break;
+        }
+        case 0x3B:{
+            //0x3B
+            //DEC SP
+            //Decrement SP by 1
+            SP_ -= 1;
+            break;
+        }
+        case 0x3C:{
+            //0x3C
+            //INC A
+            //Increment content in A by 1
+            uint8_t a = Registers_[REG_A];
+            uint8_t result = a + 1;
+            uint8_t newFlags = F() & Flags::C;
+
+            //Z
+            Flags::assign(newFlags, Flags::Z, result == 0);
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd8(a, 1));
+
+            Registers_[REG_A] = result;            
+            F() = newFlags;
+            break;
+        }
+        case 0x3D:{
+            //0x3D
+            //DEC A
+            //Decrement content of A by 1
+            uint8_t a = Registers_[REG_A];
+            uint8_t result = a - 1;
+            uint8_t newFlags = F() & Flags::C;
+
+            //Z
+            Flags::assign(newFlags, Flags::Z, result == 0);
+
+            //N
+            Flags::set(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfBorrowSub8(a, 1));
+
+            Registers_[REG_A] = result;
+            F() = newFlags;
+            break;
+        }
+        case 0x3E:{
+            //0x3E
+            //LD A, d8
+            //Loads next 8 bit from memory into A
+            Registers_[REG_A] = memory_.read(PC_);
+            PC_ += 1;
+            break;
+        }
+        case 0x3F:{
+            //0x3F
+            //CCF
+            //Flip the carry flag
+            uint8_t newFlags = F() & Flags::Z;
+            bool oldCarry = Flags::test(F(), Flags::C); 
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::clear(newFlags, Flags::H);
+
+            //C
+            Flags::assign(newFlags, Flags::C, !oldCarry);
+
+            F() = newFlags;
+            break;
+        }
 
         case 0xCB:{
             //16 bit opcodes
