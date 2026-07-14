@@ -257,20 +257,16 @@ void CPU::cycle(){
             //FLAGS: calculate Z and H, set N to 0
             uint8_t c = Registers_[REG_C];
             uint8_t result = c + 1;
-            uint8_t flags = Registers_[REG_F] & 0x10;
+            uint8_t newFlags = F() & Flags::C;
 
             //set Z flag
-            if(result == 0){
-                flags |= 0x80;
-            }
+            Flags::assign(newFlags, Flags::Z, result==0);
 
             //set H flag
-            if((c & 0x0F) == 0x0F){
-                flags |= 0x20;
-            }
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd8(c, 1));
 
             Registers_[REG_C] = result;
-            Registers_[REG_F] = flags;
+            F() = newFlags;
             break;
         }
         case 0x0D:{
@@ -280,23 +276,19 @@ void CPU::cycle(){
             //FLAGS: calculate Z and H, set N to 1
             uint8_t d = Registers_[REG_C];
             uint8_t result = d - 1;
-            uint8_t flags = Registers_[REG_F] & 0x10;
+            uint8_t newFlags = F() & Flags::C;
 
             //set Z flag
-            if(result == 0){
-                flags |= 0x80;
-            }
+            Flags::assign(newFlags, Flags::Z, result == 0);
 
             //set N flag
-            flags |= 0x40;
+            Flags::set(newFlags, Flags::N);
 
             //set H flag
-            if((d & 0x0F) == 0x00){
-                flags |= 0x20;
-            }
+            Flags::assign(newFlags, Flags::H, Flags::halfBorrowSub8(d, 1));
 
             Registers_[REG_C] = result;
-            Registers_[REG_F] = flags;
+            F() = newFlags;
             break;
         }
         case 0x0E:{
@@ -316,15 +308,13 @@ void CPU::cycle(){
             uint8_t a = Registers_[REG_A];
             uint8_t rightmostBit = (a & 0x01);
             uint8_t result = (rightmostBit << 7)|(a >> 1);
-            uint8_t flags = 0;
+            uint8_t newFlags = 0;
             
             //C
-            if(rightmostBit){
-                flags |= 0x10;
-            }
+            Flags::assign(newFlags, Flags::C, rightmostBit);
 
             Registers_[REG_A] = result;
-            Registers_[REG_F] = flags;
+            F() = newFlags;
             break;
         }
         case 0x10:{
@@ -364,26 +354,24 @@ void CPU::cycle(){
             //Increment content of register pair DE by 1
             uint16_t value = getDE();
             setDE(value);
-
             break;
         }
         case 0x14:{
             //0x14
             //INC D
             //Increment content of register D by 1
-            uint8_t value = Registers_[REG_D];
-            uint8_t flags = Registers_[REG_F] & 0x10;
+            uint8_t d = Registers_[REG_D];
+            uint8_t result = d + 1;
+            uint8_t newFlags = F() & Flags::C;
+
             //H Flag
-            if((value & 0xF) + (1 & 0x1) > 0xF){
-                flags |= 0x20;
-            }
-            value += 1;
-            if(value == 0){
-                flags |= 0x80;
-            }
-            flags |= 0x40;
-            Registers_[REG_D] = value;
-            Registers_[REG_F] = flags;
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd8(d, 1));
+
+            //Z Flag
+            Flags::assign(newFlags, Flags::Z, result = 0);
+
+            Registers_[REG_D] = result;
+            F() = newFlags;
             break;
         }
         case 0x15:{
@@ -392,32 +380,41 @@ void CPU::cycle(){
             //Decrement content of register D by 1
             uint8_t d = Registers_[REG_D];
             uint8_t result = d - 1;
-            uint8_t flags = Registers_[REG_F] & 0x10;
+            uint8_t newFlags = Registers_[REG_F] & 0x10;
 
             //set Z flag
-            if(result == 0){
-                flags |= 0x80;
-            }
+            Flags::assign(newFlags, Flags::Z, result == 0);
 
             //set N flag
-            flags |= 0x40;
+            Flags::set(newFlags, Flags::N);
 
             //set H flag
-            if((d & 0x0F) == 0x00){
-                flags |= 0x20;
-            }
+            Flags::assign(newFlags, Flags::H, Flags::halfBorrowSub8(d, 1));
 
             Registers_[REG_D] = result;
-            Registers_[REG_F] = flags;
+            F() = newFlags;
             break;
         }
         case 0x16:{
             //0x16
+            //LD d d8
+            //Load next 8 bit number from memory into D
+            uint8_t value = memory_.read(PC_);
+            Registers_[REG_D] = value;
+            PC_ += 1;
+            break;
+        }
+        case 0x17:{
+            //0x17
             //RLA
-            //Rotate Contents of register A to the left using Carry Flag
-            uint8_t a = Registers_[REG_A];
-            
-            uint8_t result = (a << 1);
+            //Rotate contents of Register A left through C Flag. Leftmost into Carry, Carry into Rightmost
+            uint8_t newFlags = 0;
+            uint8_t leftmost = (Registers_[REG_A] >> 7) & 1;
+            bool oldCarry = Flags::test(F(), Flags::C);
+            Registers_[REG_A] = (Registers_[REG_A] << 1) | oldCarry;
+            Flags::assign(newFlags, Flags::C, leftmost);
+            F() = newFlags;
+            break;
         }
 
         case 0xCB:{

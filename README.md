@@ -8,6 +8,6 @@ To load a ROM into the "Gameboy" to run it just change the filepath in /memory/m
 
 I might add a better way (.txt file or even GUI) for that and other stuff later but am still working on the basics.
 
-Feel free to let me know about bugs or even new features but i might take some time to responde / implement the changes you wish for.
+Feel free to let me know about bugs or even new features but i might take some time to respond / implement the changes you wish for.
 
 Also there is a memorytest.exe file in the root of the project that is just there to test it. Feel free to use it or remove, whichever you like best.
