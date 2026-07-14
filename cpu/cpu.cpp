@@ -416,6 +416,122 @@ void CPU::cycle(){
             F() = newFlags;
             break;
         }
+        case 0x18:{
+            //0x18
+            //JR s8
+            //Jump Relative from current address in PC. s8 = signed 8 bit int
+            int8_t offset = static_cast<int8_t>(memory_.read(PC_));
+            PC_ += 1;
+            PC_ += offset;
+            break;
+        }
+        case 0x19:{
+            //0x19
+            //ADD HL, DE
+            //Add contents of register DE to contents of register HL. Sotre result in HL
+            uint16_t hl = getHL();
+            uint16_t de = getDE();
+            uint16_t result = hl + de;
+            
+            uint8_t newFlags = F() & Flags::Z;
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd16(hl, de));
+
+            //C
+            Flags::assign(newFlags, Flags::C, Flags::carryAdd16(hl, de));
+
+            setHL(result);
+            F() = newFlags;
+            break;
+        }
+        case 0x1A:{
+            //0x1A
+            //LD A, (DE)
+            //Load 8-bit content of memory at address saved in DE into register A
+            uint16_t de = getDE();
+            uint8_t value = memory_.read(de);
+            Registers_[REG_A] = value;
+
+            break;
+        }
+        case 0x1B:{
+            //0x1B
+            //DEC DE
+            //Decrement content of DE by 1
+            uint16_t de = getDE();
+            uint16_t result = de - 1;
+            setDE(result);
+
+            break;
+        }
+        case 0x1C:{
+            //0x1C
+            //INC E
+            //Increment content of E by 1
+            uint8_t e = Registers_[REG_E];
+            uint8_t result = e + 1;
+            uint8_t newFlags = F() & Flags::C;
+
+            //Z
+            Flags::assign(newFlags, Flags::Z, result == 0);
+
+            //N
+            Flags::clear(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfCarryAdd8(e, 1));
+
+            Registers_[REG_E] = result;
+            F() = newFlags;
+            break;
+        }
+        case 0x1D:{
+            //0x1D
+            //DEC E
+            //Decrement contents of E by 1
+            uint8_t e = Registers_[REG_E];
+            uint8_t result = e - 1;
+            uint8_t newFlags = F() & Flags::C;
+
+            //Z
+            Flags::assign(newFlags, Flags::Z, result == 0);
+
+            //N 
+            Flags::set(newFlags, Flags::N);
+
+            //H
+            Flags::assign(newFlags, Flags::H, Flags::halfBorrowSub8(e, 1));
+
+            Registers_[REG_E] = result;
+            F() = newFlags;
+            break;
+        }
+        case 0x1E:{
+            //0x1E
+            //LD E, d8
+            //Load 8 bit operand in memory into E
+            uint8_t value = memory_.read(PC_);
+            PC_ += 1;
+            Registers_[REG_E] = value;
+            break;
+        }
+        case 0x1F:{
+            //0x1F
+            //RRA
+            //Rotate A to the right through Carry.
+            uint8_t newFlags = 0;
+            uint8_t rightmost = Registers_[REG_A] & 1;
+            bool oldCarry = Flags::test(F(), Flags::C);
+            Registers_[REG_A] = (Registers_[REG_A] >> 1) | (oldCarry << 7);
+            Flags::assign(newFlags, Flags::C, rightmost);
+            F() = newFlags;
+            break;
+        }
+
 
         case 0xCB:{
             //16 bit opcodes
