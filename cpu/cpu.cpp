@@ -1356,6 +1356,119 @@ void CPU::cycle(){
             Registers_[REG_L] = Registers_[REG_A];
             break;
         }
+        case 0x70:{
+            //0x70
+            //LD (HL), B
+            //Store B at address in HL
+            memory_.write(getHL(), Registers_[REG_B]);
+            break;
+        }
+        case 0x71:{
+            //0x71
+            //LD (HL), C
+            //Store C at address in HL
+            memory_.write(getHL(), Registers_[REG_C]);
+            break;
+        }
+        case 0x72:{
+            //0x72
+            //LD (HL), D
+            //Store D at address in HL
+            memory_.write(getHL(), Registers_[REG_D]);
+            break;
+        }
+        case 0x73:{
+            //0x73
+            //LD (HL), E
+            //Store E at address in HL
+            memory_.write(getHL(), Registers_[REG_E]);
+            break;
+        }
+        case 0x74:{
+            //0x74
+            //LD (HL), H
+            //Store H at address in HL
+            memory_.write(getHL(), Registers_[REG_H]);
+            break;
+        }
+        case 0x75:{
+            //0x75
+            //LD (HL), L
+            //Store L at address in HL
+            memory_.write(getHL(), Registers_[REG_L]);
+            break;
+        }
+        case 0x76:{
+            //0x76
+            //HALT
+            //halts execution, enter HALT mode, can be exited by interrupts
+
+            //will implement later when the rest of the instructions are done and interrupts are implemented
+            break;
+        }
+        case 0x77:{
+            //0x77
+            //LD (HL), A
+            //Store A at address in HL
+            memory_.write(getHL(), Registers_[REG_A]);
+            break;
+        }
+        case 0x78:{
+            //0x78
+            //LD A, B
+            //Load content of B into A
+            Registers_[REG_A] = Registers_[REG_B];
+            break;
+        }
+        case 0x79:{
+            //0x79
+            //LD A, C
+            //Load content of C into A
+            Registers_[REG_A] = Registers_[REG_C];
+            break;
+        }
+        case 0x7A:{
+            //0x7A
+            //LD A, D
+            //Load content of D into A
+            Registers_[REG_A] = Registers_[REG_D];
+            break;
+        }
+        case 0x7B:{
+            //0x7B
+            //LD A, E
+            //Load content of E into A
+            Registers_[REG_A] = Registers_[REG_E];
+            break;
+        }
+        case 0x7C:{
+            //0x7C
+            //LD A, H
+            //Load content of H into A
+            Registers_[REG_A] = Registers_[REG_H];
+            break;
+        }
+        case 0x7D:{
+            //0x7D
+            //LD A, L
+            //Load content of L into A
+            Registers_[REG_A] = Registers_[REG_L];
+            break;
+        }
+        case 0x7E:{
+            //0x7E
+            //LD A, (HL)
+            //Load 8 bits of memory from address in HL into A
+            Registers_[REG_A] = memory_.read(getHL());
+            break;
+        }
+        case 0x7F:{
+            //0x7F
+            //LD A, A
+            //Load content of A into A
+            Registers_[REG_A] = Registers_[REG_A];
+            break;
+        }
 
         case 0xCB:{
             //16 bit opcodes
