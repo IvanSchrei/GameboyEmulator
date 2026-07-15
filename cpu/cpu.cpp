@@ -1242,6 +1242,120 @@ void CPU::cycle(){
             Registers_[REG_E] = Registers_[REG_A];
             break;
         }
+        case 0x60:{
+            //0x60
+            //LD H, B
+            //Load content of B into H
+            Registers_[REG_H] = Registers_[REG_B];
+            break;
+        }
+        case 0x61:{
+            //0x61
+            //LD H, C
+            //Load content of C into H
+            Registers_[REG_H] = Registers_[REG_C];
+            break;
+        }
+        case 0x62:{
+            //0x62
+            //LD H, D
+            //Load content of D into H
+            Registers_[REG_H] = Registers_[REG_D];
+            break;
+        }
+        case 0x63:{
+            //0x63
+            //LD H, E
+            //Load content of E into H
+            Registers_[REG_H] = Registers_[REG_E];
+            break;
+        }
+        case 0x64:{
+            //0x64
+            //LD H, H
+            //Load content of H into H (useless again).
+            Registers_[REG_H] = Registers_[REG_H];
+            //^BTW i am only writing this for completness sake, compiler will optimize this to just break
+            //hopefully and if not it doesnt really matter
+            break;
+        }
+        case 0x65:{
+            //0x65
+            //LD H, L
+            //Load content of L into H
+            Registers_[REG_H] = Registers_[REG_L];
+            break;
+        }
+        case 0x66:{
+            //0x66
+            //LD H, (HL)
+            //Load content at address saved in HL into H
+            Registers_[REG_H] = memory_.read(getHL());
+            break;
+        }
+        case 0x67:{
+            //0x67
+            //LD H, A
+            //Load content of A into H
+            Registers_[REG_H] = Registers_[REG_A];
+            break;
+        }
+        case 0x68:{
+            //0x68
+            //LD L, B
+            //Load content of B into L
+            Registers_[REG_L] = Registers_[REG_B];
+            break;
+        }
+        case 0x69:{
+            //0x69
+            //LD L, C
+            //Load content of C into L
+            Registers_[REG_L] = Registers_[REG_C];
+            break;
+        }
+        case 0x6A:{
+            //0x6A
+            //LD L, D
+            //Load content of D into L
+            Registers_[REG_L] = Registers_[REG_D];
+            break;
+        }
+        case 0x6B:{
+            //0x6B
+            //LD L, E
+            //Load content of E into L
+            Registers_[REG_L] = Registers_[REG_E];
+            break;
+        }
+        case 0x6C:{
+            //0x6C
+            //LD L, H
+            //Load content of H into L
+            Registers_[REG_L] = Registers_[REG_H];
+            break;
+        }
+        case 0x6D:{
+            //0x6D
+            //LD L, L
+            //Load content of L into L
+            Registers_[REG_L] = Registers_[REG_L];
+            break;
+        }
+        case 0x6E:{
+            //0x6E
+            //LD L, (HL)
+            //Load content of address saved in HL into L
+            Registers_[REG_L] = memory_.read(getHL());
+            break;
+        }
+        case 0x6F:{
+            //0x6F
+            //LD L, A
+            //Load content of A into L
+            Registers_[REG_L] = Registers_[REG_A];
+            break;
+        }
 
         case 0xCB:{
             //16 bit opcodes
